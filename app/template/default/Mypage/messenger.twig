@@ -1,0 +1,681 @@
+{#
+This file is part of EC-CUBE
+
+Copyright(c) LOCKON CO.,LTD. All Rights Reserved.
+
+http://www.lockon.co.jp/
+
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+#}
+{% extends 'default_frame.twig' %}
+
+{% set mypageno = 'messenger' %}
+
+{% set body_class = 'mypage' %}
+{% block stylesheet %}
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css">
+  <style>
+      .ec-mypageRole img{
+          width: unset;
+      }
+      .card-bordered {
+          border: 1px solid #ebebeb;
+      }
+
+      .card {
+          border: 0;
+          border-radius: 0px;
+          margin-bottom: 30px;
+          -webkit-box-shadow: 0 2px 3px rgba(0,0,0,0.03);
+          box-shadow: 0 2px 3px rgba(0,0,0,0.03);
+          -webkit-transition: .5s;
+          transition: .5s;
+      }
+
+      .padding {
+          padding: 3rem !important
+      }
+
+      body {
+          background-color: #f9f9fa
+      }
+
+      .card-header:first-child {
+          border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+      }
+
+
+      .card-header {
+          display: -webkit-box;
+          display: flex;
+          -webkit-box-pack: justify;
+          justify-content: flex-start;
+          -webkit-box-align: center;
+          align-items: center;
+          padding: 15px 0px;
+          background-color: transparent;
+          border-bottom: 1px solid rgba(77,82,89,0.07);
+      }
+
+      .card-header .card-title {
+          padding: 0;
+          border: none;
+      }
+
+      h4.card-title {
+          font-size: 17px;
+      }
+
+      .card-header>*:last-child {
+          margin-right: 0;
+      }
+
+      .card-header>* {
+          margin-left: 0px;
+          margin-right: 8px;
+      }
+
+      .btn-secondary {
+          color: #4d5259 !important;
+          background-color: #e4e7ea;
+          border-color: #e4e7ea;
+          color: #fff;
+      }
+
+      .btn-xs {
+          font-size: 11px;
+          padding: 2px 8px;
+          line-height: 18px;
+      }
+      .btn-xs:hover{
+          color:#fff !important;
+      }
+
+      .file_name{
+          color: #FFFFFF;
+          font-size: 10px;
+      }
+
+
+      .card-title {
+          font-family: Roboto,sans-serif;
+          font-weight: 300;
+          line-height: 1.5;
+          margin-bottom: 0;
+          padding: 15px 20px;
+          border-bottom: 1px solid rgba(77,82,89,0.07);
+      }
+      .error-msg{
+        color: #FFFFFF;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .ps-container {
+          position: relative;
+      }
+
+      .ps-container {
+          -ms-touch-action: auto;
+          touch-action: auto;
+          overflow: hidden!important;
+          -ms-overflow-style: none;
+      }
+
+      .media-chat {
+          padding-right: 64px;
+          margin-bottom: 0;
+          display: flex;
+          align-items: flex-start;
+      }
+
+      .media .avatar {
+          flex-shrink: 0;
+      }
+      .media-chat-reverse .media-body .msg:before {
+          right: -13px;
+          left: unset!important;
+          border-left: 13px solid #66ff66;
+          border-right: unset!important;
+      }
+      .media-chat .media-body .msg:before {
+          content:"";
+          position: absolute;
+          width: 0;
+          height: 0;
+          border-top: 2px solid transparent;
+          border-bottom: 8px solid transparent;
+          left: -13px;
+          border-right: 13px solid #FFFFFF;
+          top: 5px;
+      }
+      .avatar {
+          position: relative;
+          display: inline-block;
+          width: 36px;
+          height: 36px;
+          line-height: 36px;
+          text-align: center;
+          color: #8b95a5;
+          text-transform: uppercase;
+      }
+      time{
+          font-size: 9px;
+      }
+      .media-chat .media-body {
+          -webkit-box-flex: initial;
+          flex: initial;
+          display: flex;
+          flex-float: wrap-reverse;
+          align-items: center;
+      }
+      .media-chat .media-body .msg{
+          font-size: 12px;
+          word-break: break-all;
+      }
+      .media-chat-reverse .media-body .msg{
+          margin-right: 16px!important;
+          margin-left: 0px!important;
+      }
+      .media-chat .media-body .msg{
+          margin-left: 13px;
+          margin-right: 0px;
+      }
+      .media-chat-reverse .media-body .msg{
+          margin-right: 0px;
+          margin-left: 13px;
+      }
+      .media-chat-reverse .media-body{
+          flex-flow: row-reverse;
+      }
+      .media-body {
+          width: fit-content;
+          min-width: 0;
+      }
+
+      .media-chat .media-body p {
+          position: relative;
+          padding: 6px 8px;
+          margin: 4px 0;
+          background-color: #f5f6f7;
+          border-radius: 3px;
+          font-weight: 100;
+          color:#000000;
+      }
+
+      .media>* {
+          margin: 0 8px;
+      }
+
+      .media-chat .media-body p.meta {
+          width: 50px;
+          min-width: 50px;
+          text-align: center;
+          margin-left: 5px;
+          background-color: transparent !important;
+          padding: 0;
+          opacity: .8;
+          color: #FFFFFF;
+      }
+
+      .media-chat-reverse .media-body p.meta {
+          margin-right: 5px;
+      }
+      .media-meta-day {
+          display: flex;
+          -webkit-box-pack: justify;
+          justify-content: space-between;
+          -webkit-box-align: center;
+          align-items: center;
+          margin-bottom: 0;
+          color: #8b95a5;
+          opacity: .8;
+          font-weight: 400;
+      }
+
+      .media-meta-day::before {
+          margin-right: 16px;
+      }
+
+      .media-meta-day::before, .media-meta-day::after {
+          content: '';
+          -webkit-box-flex: 1;
+          flex: 1 1;
+          border-top: 1px solid #ebebeb;
+      }
+
+      .media-meta-day::after {
+          content: '';
+          -webkit-box-flex: 1;
+          flex: 1 1;
+          border-top: 1px solid #ebebeb;
+      }
+
+      .media-meta-day::after {
+          margin-left: 16px;
+      }
+
+      .media-chat.media-chat-reverse {
+          padding-right: 12px;
+          padding-left: 64px;
+          -webkit-box-orient: horizontal;
+          -webkit-box-direction: reverse;
+          flex-direction: row-reverse;
+      }
+
+      .media-chat {
+          align-items: center;
+          padding-right: 64px;
+          margin-bottom: 0;
+      }
+
+      .media {
+          margin:0;
+          padding: 5px 12px;
+          -webkit-transition: background-color .2s linear;
+          transition: background-color .2s linear;
+      }
+
+      .media-chat.media-chat-reverse .media-body p {
+          float: right;
+          clear: right;
+          background-color: #66FF66;
+      }
+
+      .media-chat .media-body p {
+          position: relative;
+          padding: 6px 8px;
+          margin: 4px 0;
+          background-color: #ffffff;
+          border-radius: 3px;
+      }
+
+
+      .border-light {
+          border-color: #f1f2f3 !important;
+      }
+
+      .bt-1 {
+          border-top: 1px solid #ebebeb !important;
+      }
+
+      .publisher {
+          position: relative;
+          display: flex;
+          -webkit-box-align: center;
+          align-items: center;
+          padding: 12px 20px;
+          background-color: #4d4d4d;
+          color: #FFFFFF;
+      }
+
+      .publisher>*:first-child {
+          margin-left: 0;
+      }
+
+      .publisher>* {
+          margin: 0 8px;
+      }
+
+      .publisher-input::placeholder {
+          color: #FFFFFF;
+      }
+      .publisher-input {
+          color: #ffffff;
+          -webkit-box-flex: 1;
+          flex-grow: 1;
+          border: none;
+          outline: none !important;
+          background-color: transparent;
+      }
+
+      button, input, optgroup, select, textarea {
+          font-family: Roboto,sans-serif;
+          font-weight: 300;
+      }
+
+      .publisher-btn {
+          background-color: transparent;
+          border: none;
+          color: #8b95a5;
+          font-size: 16px;
+          cursor: pointer;
+          -webkit-transition: .2s linear;
+          transition: .2s linear;
+      }
+
+      .file-group {
+          position: relative;
+          overflow: hidden;
+      }
+
+      .publisher-btn {
+          background-color: transparent;
+          border: none;
+          color: #cac7c7;
+          font-size: 16px;
+          cursor: pointer;
+          -webkit-transition: .2s linear;
+          transition: .2s linear;
+      }
+
+      .file-group input[type="file"] {
+          position: absolute;
+          opacity: 0;
+          z-index: -1;
+          width: 20px;
+      }
+      .form-group{
+          margin-bottom: 0;
+      }
+      .text-info {
+          color: #48b0f7 !important;
+      }
+      .conver-name{
+          background: #000000;
+          color: #FFFFFF;
+          padding: 15px;
+      }
+      .media-chat .ident{
+          color: #FFFFFF;
+          text-align: center;
+          font-size: 10px;
+          display: grid;
+      }
+      .media-body .open_popup_prev{
+          cursor: pointer;
+      }
+      .layer-popup{
+          width: 100%;
+          height: 100%;
+          background: #4d4d4d8c;
+          position: absolute;
+          top: 0;
+          left: 0;
+      }
+      .layer-popup .popup-body{
+          position: relative;
+          width: 60%;
+          margin: 0 auto;
+          height: 50%;
+          top: 15%;
+          background: #666666;
+          border: 1px solid #000;
+      }
+      .layer-popup .popup-body img{
+          max-height: 100%;
+          min-width: 100%;
+          object-fit: contain;
+          vertical-align: bottom;
+      }
+      .layer-popup .popup-body .fa{
+          z-index: 1;
+          color: #fff;
+          font-size: 25px;
+          position: absolute;
+          right: 0;
+          cursor: pointer;
+          top: -30px;
+      }
+      .layer-popup .popup-body .content{
+          height: 100%;
+          display: flex;
+          align-items: center;
+          padding: 15px;
+      }
+      .d-none{
+          display: none;
+      }
+      #has_been_deleted{
+          color: #CCCCCC;
+          filter:opacity(0.7);
+      }
+  </style>
+{% endblock stylesheet %}
+{% block main %}
+  <div class="ec-layoutRole__main">
+    <div class="ec-mypageRole">
+      <div class="ec-pageHeader">
+        <h1 style="margin-bottom: 0;">{{ 'front.mypage.title'|trans }}/{{ 'front.mypage.nav__messenger'|trans }}</h1>
+      </div>
+    </div>
+    <div class="ec-mypageRole">
+      <div class="page-content page-container" id="page-content">
+        <div class="">
+          <div class="card card-bordered">
+            <div class="card-header">
+              <div class="form-group">
+                <select class="form-control" id="sel1">
+                  <option selected="true" disabled="disabled">（区分選択）</option>
+                  <option value="0">現場</option>
+                  <option value="1">会員</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <select class="form-control" id="sel2" disabled>
+                  <option selected="true" disabled="disabled">（対象選択）</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body conver-name text-center">
+              <p id="recei-name">（対象名称）</p>
+            </div>
+            <div class="bg-ovlay ps-container ps-theme-default ps-active-y" id="chat-content" style="background: #4D4D4D;overflow-y: scroll !important; height:calc(100vh - 325px) !important;">
+
+{#                  <div class="media media-chat">#}
+{#                    <img class="avatar" src="https://img.icons8.com/color/36/000000/administrator-male.png" alt="...">#}
+{#                    <div class="media-body">#}
+{#                      <p>Hi</p>#}
+{#                      <p>How are you ...???</p>#}
+{#                      <p>What are you doing tomorrow?<br> Can we come up a bar?</p>#}
+{#                      <p class="meta"><time datetime="2018">23:58</time></p>#}
+{#                    </div>#}
+{#                  </div>#}
+
+{#                  <div class="media media-meta-day">Today</div>#}
+
+{#                  <div class="media media-chat media-chat-reverse">#}
+{#                    <div class="media-body">#}
+{#                      <p>Hiii, I'm good.</p>#}
+{#                      <p>How are you doing?</p>#}
+{#                      <p>Long time no see! Tomorrow office. will be free on sunday.</p>#}
+{#                      <p class="meta"><time datetime="2018">00:06</time></p>#}
+{#                    </div>#}
+{#                  </div>#}
+
+            </div>
+
+            <div class="publisher bt-1 border-light">
+              <input class="publisher-input" disabled type="text" placeholder="メッセージを入力">
+              <input class="id-room" type="hidden">
+            </div>
+            <div class="publisher bt-2 border-light">
+              <span class="publisher-btn file-group">
+                <img style="width: 30px;" src="{{ asset('assets/img/common/clip.png') }}" alt="...">
+                <input type="file" class="file-upload" disabled>
+              </span>
+              <button class="btn btn-primary publisher-button" disabled>送信</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="layer-popup d-none">
+      <div class="popup-body">
+        <i class="fa fa-times" id="off-popup"></i>
+        <div class="content"></div>
+      </div>
+  </div>
+{% endblock %}
+{% block javascript %}
+  <script type="text/javascript">
+      var listen_mess;
+
+      function updateScroll(){
+          var element = document.getElementById("chat-content");
+          element.scrollTop = element.scrollHeight;
+      }
+      $('#sel1').change(function(){
+        if (listen_mess){
+            clearInterval(listen_mess);
+        }
+        var data = {
+            data :$(this).val()
+            };
+        $.ajax({
+            url: '{{ url('mypage_messenger_getinfo') }}',
+            type: 'POST',
+            data: data
+        }).always(function(data) {
+            let arr = ['<option selected="true" disabled="disabled">（対象選択）</option>'];
+            if (data.hasOwnProperty('customer') && data.customer.length > 0){
+                data.customer.forEach(function(v) {
+                  arr.push('<option value="'+v.id+'">'+v.name01+'&nbsp;'+v.name02+'</option>')
+                })
+                $('#sel2').removeAttr('disabled');
+            }else if(data.hasOwnProperty('site_info') && data.site_info.length > 0){
+                data.site_info.forEach(function(v) {
+                  arr.push('<option value="'+v.id+'">'+v.site_name+'</option>')
+                })
+                $('#sel2').removeAttr('disabled');
+            }
+            $('#sel2').html(arr);
+        });
+      })
+      $('#sel2').change(function(){
+        if (listen_mess){
+          clearInterval(listen_mess);
+        }
+        var text = $(this).find(":selected").text();
+        $('#recei-name').html(text);
+        var data = {
+            type:$('#sel1').val(),
+            id:$(this).val(),
+         }
+        $.ajax({
+            url: '{{ url('mypage_messenger_getListMessenger') }}',
+            type: 'POST',
+            data: data
+        }).always(function(data) {
+            if (data.success){
+                $('#chat-content').html(data.html);
+                $('.id-room').val(data.id_room);
+                $('input').removeAttr('disabled');
+                updateScroll();
+                listen_mess = setInterval(function (){
+                    listenMess();
+                },1000)
+            }
+        });
+      })
+      $('.file-upload').change(function (e){
+          if($(this).val().length > 0){
+              $('.publisher-button').removeAttr('disabled');
+          }else{
+              $('.publisher-button').prop('disabled',true);
+          }
+      });
+      $('.publisher-input').keyup(function(e){
+          if ($.trim($(this).val()).length > 3){
+              $('.publisher-button').removeAttr('disabled');
+          }else{
+              $('.publisher-button').prop('disabled',true);
+          }
+          if(e.keyCode == 13) {
+            var mess = $.trim($(this).val());
+            sendMess(mess)
+          }
+      });
+      $('.publisher-button').click(function(e){
+          var mess = $.trim($('.publisher-input').val());
+          sendMess(mess)
+      });
+      $('.file-group img').click(function (){
+          $('.file-upload').click();
+      })
+      function sendMess(val){
+          var inputFile = $('.file-upload');
+          var file = inputFile[0].files[0];
+          if (val !== '' || file !== undefined){
+              $('.publisher-button').prop('disabled',true);
+              var data = new FormData();
+              if (file !== undefined){
+                  data.append('file', file, file.name);
+              }
+              data.append('mess', val);
+              data.append('recei', $('#sel2').val());
+              data.append('type', $('#sel1').val());
+              data.append('id_room', $('.id-room').val());
+              $.ajax({
+                  url: '{{ url('mypage_messenger_send') }}',
+                  type: 'POST',
+                  data: data,
+                  processData: false,
+                  contentType: false,
+              }).always(function(data) {
+                  if (data.success){
+                      var today = new Date();
+                      var yyyy = today.getFullYear();
+                      var dd = String(today.getDate()).padStart(2, '0');
+                      var mm = String(today.getMonth() + 1).padStart(2, '0');
+                      var H = today.getHours();
+                      var i = today.getMinutes();
+
+                      var html = '<div class="media media-chat media-chat-reverse">'+
+                                        '<div class="media-body">'+
+                                        '<p class="msg">'+val+'</p>'+
+                                    '<p class="meta"><time>'+yyyy+'-'+mm+'-'+dd+' '+H+':'+i+'</time></p>'+
+                                '</div>'+
+                                '</div>';
+                      $('#chat-content').append(html)
+                      updateScroll();
+                  }else{
+                      $('.layer-popup').show();
+                      $('.layer-popup .popup-body .content').html('<p class="error-msg">'+data.message+'</p>');
+                  }
+                  $('.publisher-input').val('');
+                  $('.file-upload').val('');
+              });
+          }
+      }
+
+      function listenMess(){
+          var data = {
+              type:$('#sel1').val(),
+              id:$('#sel2').val(),
+              id_room:$('.id-room').val()
+          }
+          $.ajax({
+              url: '{{ url('mypage_messenger_getListMessenger') }}',
+              type: 'POST',
+              data: data
+          }).always(function(data) {
+              if (data.success){
+                  if (data.html){
+                      $('#chat-content').html(data.html);
+                      updateScroll();
+                  }
+              }
+          });
+      }
+
+      $('#chat-content').on('click','.open_popup_prev',function (e){
+          var src = $(this).attr('id');
+          if(src == 'has_been_deleted' || src == ''){
+              return false;
+          }
+          $('.layer-popup').show();
+          $('.layer-popup .popup-body .content').html('<img src="'+src+'">');
+      });
+      $('.layer-popup').on('click', function(e) {
+          if ($(e.target).is("#off-popup") === true || ($(e.target).is("img") === false && $(e.target).is("p") === false && $(e.target).is(".content") === false) ){
+              $('.layer-popup').hide();
+              $('.layer-popup .popup-body .content').html('');
+          }
+      });
+      $('#chat-content').scroll(function(e) {
+          console.log(e);
+      });
+  </script>
+{% endblock javascript %}

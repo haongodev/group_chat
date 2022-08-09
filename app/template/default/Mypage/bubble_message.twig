@@ -1,0 +1,37 @@
+{% for buble in chat %}
+    {% if author != buble.register_id %}
+      <div class="media media-chat">
+        <div class="ident">
+          <span class="usr_name">{{ buble.register_name }}</span>
+          <img class="avatar" src="{{ asset('assets/img/common/person.png') }}" alt="...">
+        </div>
+        <div class="media-body">
+          {% if buble.chat_class == 'text' %}
+            <p class="msg">{{ buble.chat_string }}</p>
+          {% else %}
+            <img class="avatar open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}" src="{{ asset('assets/img/common/file.png') }}" alt="...">
+            <span class="file_name open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}">{{ buble.file_name }}</span>
+          {% endif %}
+          <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
+        </div>
+      </div>
+    {% else %}
+      <div class="media media-chat media-chat-reverse">
+        <div class="media-body">
+          {% if buble.chat_class == 'text' %}
+            <p class="msg">{{ buble.chat_string }}</p>
+          {% else %}
+            <span class="file_name open_popup_prev text-center" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}">
+              {{ buble.file_name }}
+              {% if buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) == 'has_been_deleted'%}
+                <br><span class="was-deleted">（削除済み）</span>
+              {% endif %}
+            </span>
+            <img class="avatar open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}" src="{{ asset('assets/img/common/file.png') }}" alt="...">
+          {% endif %}
+          <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
+        </div>
+      </div>
+    {% endif %}
+{% endfor %}
+

@@ -1,0 +1,2 @@
+tao bang dtb_customer_chat_conversation,dtb_customer_chat_info
+them cot limit_storage cho customer
