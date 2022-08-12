@@ -5,29 +5,45 @@
           <span class="usr_name">{{ buble.register_name }}</span>
           <img class="avatar" src="{{ asset('assets/img/common/person.png') }}" alt="...">
         </div>
-        <div class="media-body">
-          {% if buble.chat_class == 'text' %}
+        <div class="media-body {% if buble.delete_at != null %}has_been_deleted{% endif %}">
+          {% if buble.chat_class == 1 %}
             <p class="msg">{{ buble.chat_string }}</p>
           {% else %}
-            <img class="avatar open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}" src="{{ asset('assets/img/common/file.png') }}" alt="...">
-            <span class="file_name open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}">{{ buble.file_name }}</span>
+            <img class="avatar open_popup_des" src="{{ asset('assets/img/common/file.png') }}" alt="...">
+            <span class="file_name open_popup_des text-center">
+              {{ buble.file_name }}
+              {% if buble.delete_at != null%}
+                <br><span class="was-deleted">（削除済み）</span>
+              {% else %}
+                <ul class="popup-action d-none">
+                  <li class="act-preview" data-id="{{ buble.id }}">閲覧</li>
+                  <li class="act-download" data-id="{{ buble.id }}">ダウンロード</li>
+                </ul>
+              {% endif %}
+            </span>
           {% endif %}
           <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
         </div>
       </div>
     {% else %}
       <div class="media media-chat media-chat-reverse">
-        <div class="media-body">
-          {% if buble.chat_class == 'text' %}
+        <div class="media-body {% if buble.delete_at != null %}has_been_deleted{% endif %}">
+          {% if buble.chat_class == 1 %}
             <p class="msg">{{ buble.chat_string }}</p>
           {% else %}
-            <span class="file_name open_popup_prev text-center" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}">
+            <span class="file_name open_popup_self text-center" >
               {{ buble.file_name }}
-              {% if buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) == 'has_been_deleted'%}
+              {% if buble.delete_at != null%}
                 <br><span class="was-deleted">（削除済み）</span>
+              {% else %}
+                {% if buble.register_id == app.user.getId() %}
+                  <ul class="popup-action d-none" >
+                    <li class="act-delete" data-id="{{ buble.id }}" >削除</li>
+                  </ul>
+                {% endif %}
               {% endif %}
             </span>
-            <img class="avatar open_popup_prev" id="{{ buble.file_name|ext(buble.chat_info_id,app.user.getParentId(),kernelProjectDir ) }}" src="{{ asset('assets/img/common/file.png') }}" alt="...">
+            <img class="avatar open_popup_self" src="{{ asset('assets/img/common/file.png') }}" alt="...">
           {% endif %}
           <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
         </div>

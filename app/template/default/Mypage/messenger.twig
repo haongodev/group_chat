@@ -93,6 +93,7 @@ file that was distributed with this source code.
       }
 
       .file_name{
+          z-index: 1;
           color: #FFFFFF;
           font-size: 10px;
       }
@@ -189,6 +190,7 @@ file that was distributed with this source code.
           flex-flow: row-reverse;
       }
       .media-body {
+          position: relative;
           width: fit-content;
           min-width: 0;
       }
@@ -382,7 +384,7 @@ file that was distributed with this source code.
           font-size: 10px;
           display: grid;
       }
-      .media-body .open_popup_prev{
+      .media-body .open_popup_des,.open_popup_self{
           cursor: pointer;
       }
       .layer-popup{
@@ -391,6 +393,7 @@ file that was distributed with this source code.
           background: #4d4d4d8c;
           position: absolute;
           top: 0;
+          z-index: 2;
           left: 0;
       }
       .layer-popup .popup-body{
@@ -421,14 +424,34 @@ file that was distributed with this source code.
           height: 100%;
           display: flex;
           align-items: center;
+          justify-content: center;
           padding: 15px;
       }
       .d-none{
           display: none;
       }
-      #has_been_deleted{
+      .has_been_deleted{
           color: #CCCCCC;
           filter:opacity(0.7);
+      }
+      .popup-action{
+          width: 120px;
+          height: 80px;
+          font-size:12px;
+          position: absolute;
+          background: #fff;
+          color: #000;
+          list-style-type: none;
+          text-align: center;
+          padding: 5px;
+      }
+      .open_popup_des .popup-action{
+          top: 6px;
+          right: 0;
+      }
+      .open_popup_self .popup-action{
+          top: 6px;
+          left: 0;
       }
   </style>
 {% endblock stylesheet %}
@@ -488,6 +511,7 @@ file that was distributed with this source code.
             <div class="publisher bt-1 border-light">
               <input class="publisher-input" disabled type="text" placeholder="メッセージを入力">
               <input class="id-room" type="hidden">
+              <input class="page-num" value="0" type="hidden">
             </div>
             <div class="publisher bt-2 border-light">
               <span class="publisher-btn file-group">
@@ -547,11 +571,13 @@ file that was distributed with this source code.
         if (listen_mess){
           clearInterval(listen_mess);
         }
+        $('.page-num').val(0);
         var text = $(this).find(":selected").text();
         $('#recei-name').html(text);
         var data = {
             type:$('#sel1').val(),
             id:$(this).val(),
+            id_page:$('.page-num').val(),
          }
         $.ajax({
             url: '{{ url('mypage_messenger_getListMessenger') }}',
@@ -644,7 +670,8 @@ file that was distributed with this source code.
           var data = {
               type:$('#sel1').val(),
               id:$('#sel2').val(),
-              id_room:$('.id-room').val()
+              id_room:$('.id-room').val(),
+              id_page:$('.page-num').val(),
           }
           $.ajax({
               url: '{{ url('mypage_messenger_getListMessenger') }}',
@@ -653,29 +680,113 @@ file that was distributed with this source code.
           }).always(function(data) {
               if (data.success){
                   if (data.html){
-                      $('#chat-content').html(data.html);
-                      updateScroll();
+                      if(data.id_page == 0){
+                        $('#chat-content').html(data.html);
+                        updateScroll();
+                      }else{
+                          $('#chat-content').prepend(data.html);
+                      }
                   }
               }
           });
       }
+      $('#chat-content').on('click',function (e){
+          if ($(e.target).is(".open_popup_des") !== false || $(e.target).is(".open_popup_self") !== false || $(e.target).is(".act-download") !== false || $(e.target).is(".act-delete") !== false || $(e.target).is(".act-preview") !== false){
 
-      $('#chat-content').on('click','.open_popup_prev',function (e){
-          var src = $(this).attr('id');
-          if(src == 'has_been_deleted' || src == ''){
-              return false;
+          }else{
+              $('.popup-action').hide();
           }
-          $('.layer-popup').show();
-          $('.layer-popup .popup-body .content').html('<img src="'+src+'">');
       });
+
+      $('#chat-content').on('click','.open_popup_des',function (e){
+          $('.popup-action').hide();
+          if ($(e.target).is("img") === true){
+              $(this).next('.file_name').find('.popup-action').show();
+          }else{
+              $(this).find('.popup-action').show();
+          }
+      });
+      $('#chat-content').on('click','.open_popup_self',function (e){
+          $('.popup-action').hide();
+          if ($(e.target).is("img") === true){
+              $(this).prev('.file_name').find('.popup-action').show();
+          }else if ($(e.target).is(".file_name") === true){
+              $(this).find('.popup-action').show();
+          }
+      });
+      // preview action
+      $('#chat-content').on('click','.act-preview', function(e) {
+          var that = $(this);
+          var id_mess = $(this).attr('data-id');
+          var data = {
+              id_mess:id_mess
+          }
+          $.ajax({
+              url: '{{ url('mypage_messenger_previewFile') }}',
+              type: 'POST',
+              data: data
+          }).always(function(data) {
+              $('.popup-action').hide();
+              $('.layer-popup .popup-body .content').html(data.html);
+              $('.layer-popup').show();
+          });
+      });
+      // download action
+      $('#chat-content').on('click','.act-download', function(e) {
+          var that = $(this);
+          var id_mess = $(this).attr('data-id');
+          var data = {
+              id_mess:id_mess
+          }
+          $.ajax({
+              url: '{{ url('mypage_messenger_downloadFile') }}',
+              type: 'POST',
+              data: data
+          }).always(function(data) {
+              $('.popup-action').hide();
+              if (data.success === false){
+                  $('.layer-popup .popup-body .content').html(data.html);
+                  $('.layer-popup').show();
+              }else{
+                  let a = document.createElement('a');
+                  a.href = data.src;
+                  a.download = data.file_name;
+                  document.body.append(a);
+                  a.click();
+                  a.remove();
+              }
+          });
+      });
+      // delete action
+      $('#chat-content').on('click','.act-delete', function(e) {
+          var that = $(this);
+          var id_mess = $(this).attr('data-id');
+          var data = {
+              id_mess:id_mess
+          }
+          $.ajax({
+              url: '{{ url('mypage_messenger_deleteFile') }}',
+              type: 'POST',
+              data: data
+          }).always(function(data) {
+              if (data.success){
+                  that.parents('.media-body').addClass('has_been_deleted');
+                  that.parents('ul').remove();
+              }
+          });
+      });
+
       $('.layer-popup').on('click', function(e) {
           if ($(e.target).is("#off-popup") === true || ($(e.target).is("img") === false && $(e.target).is("p") === false && $(e.target).is(".content") === false) ){
               $('.layer-popup').hide();
               $('.layer-popup .popup-body .content').html('');
           }
       });
-      $('#chat-content').scroll(function(e) {
-          console.log(e);
+      $('#chat-content').scroll(function(){
+          if( $(this).scrollTop() == 0 ){
+            cur_page = 1 + parseInt($('.page-num').val());
+            $('.page-num').val(cur_page);
+          }
       });
   </script>
 {% endblock javascript %}

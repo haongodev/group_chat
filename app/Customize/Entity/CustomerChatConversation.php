@@ -116,6 +116,15 @@ if (!class_exists('\Customize\Entity\CustomerChatConversation')) {
             return $this->chat_info_id;
         }
         /**
+         * Get id.
+         *
+         * @return \Customize\Entity\CustomerChatInfo|null
+         */
+        public function getId()
+        {
+            return $this->id;
+        }
+        /**
          * Get chat_file_name.
          *
          * @return string
@@ -171,13 +180,13 @@ if (!class_exists('\Customize\Entity\CustomerChatConversation')) {
         /**
          * Set chat_class.
          *
-         * @param string $String
+         * @param int $type
          *
          * @return CustomerChatConversation
          */
-        public function setChatClass($String)
+        public function setChatClass($type)
         {
-            $this->chat_class = $String;
+            $this->chat_class = $type;
             return $this;
         }
 
@@ -259,6 +268,27 @@ if (!class_exists('\Customize\Entity\CustomerChatConversation')) {
         public function setCreateDate($time = null)
         {
             $this->create_date = $time;
+            return $this;
+        }
+        /**
+         * Get delete_at.
+         *
+         * @return /DateTime
+         */
+        public function getDeleteAt()
+        {
+            return $this->delete_at;
+        }
+        /**
+         * Set delete_at.
+         *
+         * @param \DateTime $deleteAt
+         *
+         * @return CustomerChatConversation
+         */
+        public function setDeleteAt($deleteAt)
+        {
+            $this->delete_at = $deleteAt;
             return $this;
         }
     }

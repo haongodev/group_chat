@@ -98,6 +98,79 @@ class MessengerController extends AbstractController
     /**
      * お届け先一覧画面.
      *
+     * @Route("/mypage/messenger/downloadFile", name="mypage_messenger_downloadFile")
+     */
+    public function downloadFile(Request $request)
+    {
+        $id_mess = $request->get('id_mess');
+        $info_mess = $this->customerChatConversationRepository->findOneBy(['id' => $id_mess,'delete_at' => null]);
+        if ($info_mess){
+            $src = '/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
+            $data = [
+                'success' => true,
+                'src' => $src,
+                'file_name' => $info_mess->getFileName(),
+            ];
+            return new JsonResponse($data);
+        }
+        $data = [
+            'success' => false,
+            'html' => '<p class="error-msg">ファイルが存在しません。</p>',
+        ];
+        return new JsonResponse($data);
+    }
+    /**
+     * お届け先一覧画面.
+     *
+     * @Route("/mypage/messenger/previewFile", name="mypage_messenger_previewFile")
+     */
+    public function previewFile(Request $request)
+    {
+        $id_mess = $request->get('id_mess');
+        $info_mess = $this->customerChatConversationRepository->findOneBy(['id' => $id_mess,'delete_at' => null]);
+        if ($info_mess){
+            $src = '/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
+            $html = '<img src="'.$src.'" >';
+            $data = [
+                'success' => true,
+                'html' => $html,
+            ];
+            return new JsonResponse($data);
+        }
+        $data = [
+            'success' => false,
+            'html' => '<p class="error-msg">ファイルが存在しません。</p>',
+        ];
+        return new JsonResponse($data);
+    }
+    /**
+     * お届け先一覧画面.
+     *
+     * @Route("/mypage/messenger/deleteFile", name="mypage_messenger_deleteFile")
+     */
+    public function deleteFile(Request $request)
+    {
+        $id_mess = $request->get('id_mess');
+        $info_mess = $this->customerChatConversationRepository->findOneBy(['id' => $id_mess]);
+        if ($info_mess){
+            $info_mess->setDeleteAt(new \DateTime());
+            $this->entityManager->persist($info_mess);
+            $this->entityManager->flush();
+            $data = [
+                'success' => true,
+                'html' => null,
+            ];
+            return new JsonResponse($data);
+        }
+        $data = [
+            'success' => false,
+            'html' => null,
+        ];
+        return new JsonResponse($data);
+    }
+    /**
+     * お届け先一覧画面.
+     *
      * @Route("/mypage/messenger/getinfo", name="mypage_messenger_getinfo")
      */
     public function getInfo(Request $request)
@@ -133,7 +206,7 @@ class MessengerController extends AbstractController
     function setStatusListen($id_room,$status,$delay = 0){
         $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
         $value = [
-            'flag' => $status,
+            'flag' => $status
         ];
         sleep($delay);
         file_put_contents($cache_file_name,json_encode($value));
@@ -149,27 +222,37 @@ class MessengerController extends AbstractController
         $id_recei = $request->get('id');
         $type = (int) $request->get('type');
         $id_room = $request->get('id_room');
+        $id_page = (int) $request->get('id_page');
 
+        $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
+        $cache_page_chat = $this->getParameter('eccube_theme_app_dir').'/user_data/page_cache_'.$id_sent.'.json';
         if ($id_room){// lísten
-            $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
             if(!file_exists($cache_file_name)){
                 file_put_contents($cache_file_name,'');
             }
+            if(!file_exists($cache_page_chat)){
+                file_put_contents($cache_page_chat,json_encode(['page'=>$id_page]));
+            }
+
+            $get_p = file_get_contents($cache_page_chat);
+            $old_page = json_decode($get_p);
 
             $get_ctn = file_get_contents($cache_file_name);
             $file = json_decode($get_ctn);
             $html = null;
             if(is_null($file)){
-                $this->setStatusListen($id_room,false);
+                $this->setStatusListen($id_room,false,0);
             }else{
-                if($file->flag === true){
-                    $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room);
+                if($file->flag === true || $old_page->page != $id_page){
+                    $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room,$id_page);
+                    file_put_contents($cache_page_chat,json_encode(['page'=>$id_page]));
                     $this->setStatusListen($id_room,false,1);
                 }
             }
         }else{// init
             // check exist in customer_chat_ìno
-            $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room);
+            file_put_contents($cache_page_chat,json_encode(['page'=>0]));
+            $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room,$id_page);
         }
 
         $data = [
@@ -179,7 +262,7 @@ class MessengerController extends AbstractController
         ];
         return new JsonResponse($data);
     }
-    function renderBubble($type,$id_recei,$id_sent,&$id_room){
+    function renderBubble($type,$id_recei,$id_sent,&$id_room,$id_page){
         if (!$id_room){
             $chat_info = $this->checkTypeInfo($type,$id_recei,$id_sent);
             if (!$chat_info){
@@ -200,12 +283,17 @@ class MessengerController extends AbstractController
                 $id_room = $chat_info[0]['id'];
             }
         }
+        $limit = 30;
+        if ($id_page > 0){
+            $id_page = $id_page * $limit;
+        }
         $Conversation = $this->customerChatConversationRepository->createQueryBuilder('c')
             ->andWhere('c.chat_info_id = :room_id')
             ->setParameter('room_id', $id_room)
-            ->andWhere('c.delete_at is null')
-            ->setMaxResults(30)
-            ->setFirstResult(0)
+            ->andWhere('c.delete_at is null OR c.chat_class = :chat_class')
+            ->setParameter('chat_class', 0)
+            ->setMaxResults($limit)
+            ->setFirstResult($id_page)
             ->orderBy('c.id', 'DESC');
         $list_mess = $Conversation->getQuery()->getResult();
         $list_mess = array_reverse($list_mess);
@@ -272,7 +360,7 @@ class MessengerController extends AbstractController
             $Conversation_fie->setChatInfo($ChatInfo);
             $Conversation_fie->setRegisterId($id_sent);
             $Conversation_fie->setRegisterName($register_name);
-            $Conversation_fie->setChatClass('file');
+            $Conversation_fie->setChatClass(0);
             $Conversation_fie->setFileName($fileName);
             $Conversation_fie->setCreateDate(new \DateTime());
             $this->entityManager->persist($Conversation_fie);
@@ -282,7 +370,7 @@ class MessengerController extends AbstractController
             $Conversation_txt->setChatInfo($ChatInfo);
             $Conversation_txt->setRegisterId($id_sent);
             $Conversation_txt->setRegisterName($register_name);
-            $Conversation_txt->setChatClass('text');
+            $Conversation_txt->setChatClass(1);
             $Conversation_txt->setChatString($mess);
             $Conversation_txt->setCreateDate(new \DateTime());
             $this->entityManager->persist($Conversation_txt);
