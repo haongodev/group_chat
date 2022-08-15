@@ -691,7 +691,7 @@ file that was distributed with this source code.
           }).always(function(respone) {
               if (respone.success){
                   if (respone.html){
-                      if(data.id_page === 0){
+                      if(data.id_page == 0){
                         $('#chat-content').html(respone.html);
                         updateScroll();
                       }else{
