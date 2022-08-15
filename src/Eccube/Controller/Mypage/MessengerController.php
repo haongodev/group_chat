@@ -350,7 +350,7 @@ class MessengerController extends AbstractController
             $Customer->setStorageLimit($size);
             $this->entityManager->persist($Customer);
 
-            $fileName = rand(10000,99999).'_'.$file->getClientOriginalName(). '.' . $file->getClientOriginalExtension();
+            $fileName = rand(10000,99999).'_'.$file->getClientOriginalName();
             $file->move(
                 'html/upload/strage/'.$this->getUser()->getParentId().'/chat/'.$ChatInfo['id'],
                 $fileName

@@ -22,7 +22,7 @@
               {% endif %}
             </span>
           {% endif %}
-          <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
+          <p class="meta"><time>{{ buble.create_date |date('Y/m/d H:i') }}</time></p>
         </div>
       </div>
     {% else %}
@@ -45,7 +45,7 @@
             </span>
             <img class="avatar open_popup_self" src="{{ asset('assets/img/common/file.png') }}" alt="...">
           {% endif %}
-          <p class="meta"><time>{{ buble.create_date |date('Y-m-d H:i') }}</time></p>
+          <p class="meta"><time>{{ buble.create_date |date('Y/m/d H:i') }}</time></p>
         </div>
       </div>
     {% endif %}

@@ -202,16 +202,12 @@ file that was distributed with this source code.
 
       .media-chat .media-body p {
           position: relative;
-          padding: 6px 8px;
+          padding: 5px;
           margin: 4px 0;
-          background-color: #f5f6f7;
           border-radius: 3px;
           font-weight: 100;
           color:#000000;
-      }
-
-      .media>* {
-          margin: 0 8px;
+          background-color: #ffffff;
       }
 
       .media-chat .media-body p.meta {
@@ -291,16 +287,6 @@ file that was distributed with this source code.
           clear: right;
           background-color: #66FF66;
       }
-
-      .media-chat .media-body p {
-          position: relative;
-          padding: 6px 8px;
-          margin: 4px 0;
-          background-color: #ffffff;
-          border-radius: 3px;
-      }
-
-
       .border-light {
           border-color: #f1f2f3 !important;
       }
@@ -582,7 +568,7 @@ file that was distributed with this source code.
             if (data.success){
                 $('#chat-content').html(data.html);
                 $('.id-room').val(data.id_room);
-                $('input,textarea').removeAttr('disabled');
+                $('input,textarea,button').removeAttr('disabled');
 
                 updateScroll();
                 listen_mess = setInterval(function (){
@@ -598,17 +584,17 @@ file that was distributed with this source code.
               $('.publisher-button').prop('disabled',true);
           }
       });
-      $('.publisher-input').keyup(function(e){
-          if ($.trim($(this).val()).length > 3){
-              $('.publisher-button').removeAttr('disabled');
-          }else{
-              $('.publisher-button').prop('disabled',true);
-          }
-          if(e.keyCode == 13) {
-            var mess = $.trim($(this).val());
-            sendMess(mess)
-          }
-      });
+      // $('.publisher-input').keyup(function(e){
+      //     if ($.trim($(this).val()).length > 3){
+      //         $('.publisher-button').removeAttr('disabled');
+      //     }else{
+      //         $('.publisher-button').prop('disabled',true);
+      //     }
+      //     if(e.keyCode == 13) {
+      //       var mess = $.trim($(this).val());
+      //       sendMess(mess)
+      //     }
+      // });
       $('.publisher-button').click(function(e){
           var mess = $.trim($('.publisher-input').val());
           sendMess(mess)
@@ -661,11 +647,12 @@ file that was distributed with this source code.
                                       '</ul>'+
                                   '</span>'+
                                   '<img class="avatar open_popup_self" src="{{ asset('assets/img/common/file.png') }}" alt="...">'+
-                                  '<p class="meta"><time>'+yyyy+'-'+mm+'-'+dd+' '+H+':'+i+'</time></p>'+
+                                  '<p class="meta"><time>'+yyyy+'/'+mm+'/'+dd+' '+H+':'+i+'</time></p>'+
                                   '</div>'+
                                 '</div>';
                       }
-                      $('#chat-content').append(html)
+                      $('#chat-content').append(html);
+                      $('.publisher-button').removeAttr('disabled');
                       updateScroll();
                   }else{
                       $('.layer-popup').show();
