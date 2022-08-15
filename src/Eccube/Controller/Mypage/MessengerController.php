@@ -350,7 +350,7 @@ class MessengerController extends AbstractController
             $Customer->setStorageLimit($size);
             $this->entityManager->persist($Customer);
 
-            $fileName = md5(uniqid()) . '.' . $file->getClientOriginalExtension();
+            $fileName = rand(10000,99999).'_'.$file->getClientOriginalName(). '.' . $file->getClientOriginalExtension();
             $file->move(
                 'html/upload/strage/'.$this->getUser()->getParentId().'/chat/'.$ChatInfo['id'],
                 $fileName
@@ -364,6 +364,8 @@ class MessengerController extends AbstractController
             $Conversation_fie->setFileName($fileName);
             $Conversation_fie->setCreateDate(new \DateTime());
             $this->entityManager->persist($Conversation_fie);
+
+            $data['file_name'] = $fileName;
         }
         if ($mess !== ''){
             $Conversation_txt = $this->customerChatConversationRepository->newConversation();
@@ -377,45 +379,14 @@ class MessengerController extends AbstractController
         }
 
         $this->entityManager->flush();
-
-        $this->setStatusListen($id_room,true);
-        $data = [
-            'success' => true,
-        ];
-        return new JsonResponse($data);
-    }
-
-    /**
-     * お届け先一覧画面.
-     *
-     * @Route("/mypage/messenger/received", name="mypage_messenger_received")
-     */
-    public function received(Request $request)
-    {
-        $id_sent = $request->get('sent');
-        $id_room = $request->get('id_room');
-        if (!$id_room){
-            $data = [
-                'success' => false,
-                'message' => 'new Room'
-            ];
-            return new JsonResponse($data);
+        if ($file){
+            $data['file_id'] = $Conversation_fie->getId();
         }
-        $date = date('Y-m-d H:i:s');
-        $Conversation = $this->customerChatConversationRepository->createQueryBuilder('c')
-                        ->andWhere('c.chat_info_id = :id_room')
-                        ->setParameter('id_room', $id_room)
-                        ->andWhere('c.register_id = :id_sent')
-                        ->setParameter('id_sent', $id_sent)
-                        ->andWhere('c.create_date >= :create_date_start')
-                        ->setParameter('create_date_start', $date)
-                        ->orderBy('c.create_date', 'DESC');
-        $list_mess = $Conversation->getQuery()->getResult();
-        $data = [
-            'success' => true,
-        ];
+        $this->setStatusListen($id_room,true);
+        $data['success'] = true;
         return new JsonResponse($data);
     }
+
     /**
      * helper.
      *
