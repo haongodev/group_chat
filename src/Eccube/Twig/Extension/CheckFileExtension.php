@@ -30,17 +30,13 @@ class CheckFileExtension extends AbstractExtension
             new TwigFilter('ext', [$this, 'ext']),
         ];
     }
-    public function ext($filename,$chat_info_id,$parent_id,$baseUrl){
-        $allowed = ['gif', 'png', 'jpg'];
+    public function ext($filename){
+        $allowed = ['jpeg', 'png', 'jpg'];
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        if (!in_array($ext, $allowed)) {
-            return '';
-        }
-        $result = '/html/upload/strage/'.$parent_id.'/chat/'. $chat_info_id .'/'.$filename;
-        if (file_exists($baseUrl.$result)){
-            return $result;
+        if (in_array(strtolower($ext), $allowed)) {
+            return true;
         }else{
-            return 'has_been_deleted';
+            return false;
         }
     }
 }

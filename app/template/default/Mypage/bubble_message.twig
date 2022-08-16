@@ -11,7 +11,7 @@
           {% else %}
             <img class="avatar open_popup_des" src="{{ asset('assets/img/common/file.png') }}" alt="...">
             <span class="file_name open_popup_des text-center">
-              {{ buble.file_name }}
+              {{ buble.file_name_origin }}
               {% if buble.delete_at != null%}
                 <br><span class="was-deleted">（削除済み）</span>
               {% else %}
@@ -32,15 +32,17 @@
             <p class="msg">{{ buble.chat_string }}</p>
           {% else %}
             <span class="file_name open_popup_self text-center" >
-              {{ buble.file_name }}
+              {{ buble.file_name_origin }}
               {% if buble.delete_at != null%}
                 <br><span class="was-deleted">（削除済み）</span>
               {% else %}
-                {% if buble.register_id == app.user.getId() %}
-                  <ul class="popup-action d-none" >
-                    <li class="act-delete" data-id="{{ buble.id }}" >削除</li>
-                  </ul>
-                {% endif %}
+                <ul class="popup-action d-none">
+                  {% if buble.file_name | ext  %}
+                    <li class="act-preview" data-id="{{ buble.id }}">閲覧</li>
+                    <li class="act-download" data-id="{{ buble.id }}">ダウンロード</li>
+                  {% endif %}
+                  <li class="act-delete" data-id="{{ buble.id }}" >削除</li>
+                </ul>
               {% endif %}
             </span>
             <img class="avatar open_popup_self" src="{{ asset('assets/img/common/file.png') }}" alt="...">

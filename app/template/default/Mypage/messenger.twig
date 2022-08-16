@@ -199,7 +199,9 @@ file that was distributed with this source code.
           width: fit-content;
           min-width: 0;
       }
-
+      .media{
+          overflow: unset;
+      }
       .media-chat .media-body p {
           position: relative;
           padding: 5px;
@@ -441,6 +443,9 @@ file that was distributed with this source code.
           text-align: center;
           padding: 5px;
       }
+      .popup-action li{
+          margin: 5px;
+      }
       .open_popup_des .popup-action{
           top: 6px;
           right: 0;
@@ -535,6 +540,7 @@ file that was distributed with this source code.
         }).always(function(data) {
             let arr = ['<option selected="true" disabled="disabled">（対象選択）</option>'];
             if (data.hasOwnProperty('customer') && data.customer.length > 0){
+                arr.push('<option value="*">全員</option>');
                 data.customer.forEach(function(v) {
                   arr.push('<option value="'+v.id+'">'+v.name01+'&nbsp;'+v.name02+'</option>')
                 })
@@ -641,7 +647,7 @@ file that was distributed with this source code.
                       if (file !== undefined){
                           html += '<div class="media media-chat media-chat-reverse">'+
                                   '<div class="media-body">'+
-                                  '<span class="file_name open_popup_self text-center">'+data.file_name+
+                                  '<span class="file_name open_popup_self text-center">'+data.file_name_origin+
                                       '<ul class="popup-action d-none">'+
                                           '<li class="act-delete" data-id="'+data.file_id+'">削除</li>'+
                                       '</ul>'+

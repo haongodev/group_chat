@@ -129,7 +129,8 @@ class MessengerController extends AbstractController
         $id_mess = $request->get('id_mess');
         $info_mess = $this->customerChatConversationRepository->findOneBy(['id' => $id_mess,'delete_at' => null]);
         if ($info_mess){
-            $src = '/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
+            $baseurl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
+            $src = $baseurl.'/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
             $html = '<img src="'.$src.'" >';
             $data = [
                 'success' => true,
@@ -271,7 +272,11 @@ class MessengerController extends AbstractController
                 if ($type == 0){
                     $chat_info->setTargetId($id_recei);
                 }else{
-                    $chat_info->setTargetId($id_sent.'/'.$id_recei);
+                    if ($id_recei === '*'){
+                        $chat_info->setTargetId($this->getUser()->getParentId().'/'.$id_recei);
+                    }else{
+                        $chat_info->setTargetId($id_sent.'/'.$id_recei);
+                    }
                 }
                 $chat_info->setTargetClass($type);
                 $chat_info->setCreateDate(new \DateTime());
@@ -287,6 +292,7 @@ class MessengerController extends AbstractController
         if ($id_page > 0){
             $id_page = $id_page * $limit;
         }
+
         $Conversation = $this->customerChatConversationRepository->createQueryBuilder('c')
             ->andWhere('c.chat_info_id = :room_id')
             ->setParameter('room_id', $id_room)
@@ -323,7 +329,11 @@ class MessengerController extends AbstractController
             if ($type == 0){
                 $Chat->setTargetId($id_recei);
             }else{
-                $Chat->setTargetId($id_sent.'/'.$id_recei);
+                if ($id_recei === '*'){
+                    $Chat->setTargetId($this->getUser()->getParentId().'/'.$id_recei);
+                }else{
+                    $Chat->setTargetId($id_sent.'/'.$id_recei);
+                }
             }
             $Chat->setTargetClass($type);
             $Chat->setCreateDate(new \DateTime());
@@ -349,8 +359,8 @@ class MessengerController extends AbstractController
             $Customer = $this->customerRepository->findOneBy(['id' => $this->getUser()->getId()]);
             $Customer->setStorageLimit($size);
             $this->entityManager->persist($Customer);
-
-            $fileName = rand(10000,99999).'_'.$file->getClientOriginalName();
+            $fileNameOrigin = $file->getClientOriginalName();
+            $fileName = md5($file->getFilename() . time()) . '.' . $file->getClientOriginalExtension();
             $file->move(
                 'html/upload/strage/'.$this->getUser()->getParentId().'/chat/'.$ChatInfo['id'],
                 $fileName
@@ -362,10 +372,11 @@ class MessengerController extends AbstractController
             $Conversation_fie->setRegisterName($register_name);
             $Conversation_fie->setChatClass(0);
             $Conversation_fie->setFileName($fileName);
+            $Conversation_fie->setFileNameOrigin($fileNameOrigin);
             $Conversation_fie->setCreateDate(new \DateTime());
             $this->entityManager->persist($Conversation_fie);
 
-            $data['file_name'] = $fileName;
+            $data['file_name_origin'] = $fileNameOrigin;
         }
         if ($mess !== ''){
             $Conversation_txt = $this->customerChatConversationRepository->newConversation();
@@ -401,6 +412,9 @@ class MessengerController extends AbstractController
             $target_id = $id_recei;
             $query = $query->andWhere('c.target_id = :target_id')->setParameter('target_id', $target_id);
         }else{
+            if ($id_recei === '*'){
+                $id_sent = $this->getUser()->getParentId();
+            }
             $target_id = $id_sent.'/'.$id_recei;
             $target_id_rev = $id_recei.'/'.$id_sent;
             $query = $query->andWhere('c.target_id = :target_id OR c.target_id = :target_id_rev')

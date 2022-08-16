@@ -84,6 +84,13 @@ if (!class_exists('\Customize\Entity\CustomerChatConversation')) {
         private $file_name;
 
         /**
+         * @var string|null
+         *
+         * @ORM\Column(name="file_name_origin", type="string", length=255, nullable=true)
+         */
+        private $file_name_origin;
+
+        /**
          * @var DateTime
          *
          * @ORM\Column(name="create_date", type="datetimetz")
@@ -143,6 +150,27 @@ if (!class_exists('\Customize\Entity\CustomerChatConversation')) {
         public function setFileName($file_name)
         {
             $this->file_name = $file_name;
+            return $this;
+        }
+        /**
+         * Get chat_file_name_origin.
+         *
+         * @return string
+         */
+        public function getFileNameOrigin()
+        {
+            return $this->file_name_origin;
+        }
+        /**
+         * Set chat_file_name_origin.
+         *
+         * @param string $file_name_origin
+         *
+         * @return CustomerChatConversation
+         */
+        public function setFileNameOrigin($file_name_origin)
+        {
+            $this->file_name_origin = $file_name_origin;
             return $this;
         }
         /**
