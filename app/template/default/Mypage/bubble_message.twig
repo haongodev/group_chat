@@ -39,8 +39,8 @@
                 <ul class="popup-action d-none">
                   {% if buble.file_name | ext  %}
                     <li class="act-preview" data-id="{{ buble.id }}">閲覧</li>
-                    <li class="act-download" data-id="{{ buble.id }}">ダウンロード</li>
                   {% endif %}
+                  <li class="act-download" data-id="{{ buble.id }}">ダウンロード</li>
                   <li class="act-delete" data-id="{{ buble.id }}" >削除</li>
                 </ul>
               {% endif %}

@@ -136,6 +136,9 @@ file that was distributed with this source code.
       .media .avatar {
           flex-shrink: 0;
       }
+      .media-chat-reverse .avatar{
+          margin-right: 0!important;
+      }
       .media-chat-reverse .media-body .msg:before {
           right: -13px;
           left: unset!important;
@@ -154,6 +157,8 @@ file that was distributed with this source code.
           top: 5px;
       }
       .avatar {
+          margin-right: 17px;
+          margin-left: 5px;
           position: relative;
           display: inline-block;
           width: 36px;
@@ -174,6 +179,9 @@ file that was distributed with this source code.
           align-items: center;
       }
       .media-chat .media-body .msg{
+          display: flex;
+          align-items: center;
+          height: 100%;
           font-size: 12px;
           word-break: break-all;
       }
@@ -194,6 +202,7 @@ file that was distributed with this source code.
           flex-flow: row-reverse;
       }
       .media-body {
+          height: 56px;
           overflow: unset;
           position: relative;
           width: fit-content;
@@ -205,7 +214,7 @@ file that was distributed with this source code.
       .media-chat .media-body p {
           position: relative;
           padding: 5px;
-          margin: 4px 0;
+          margin: 0;
           border-radius: 3px;
           font-weight: 100;
           color:#000000;
@@ -252,7 +261,9 @@ file that was distributed with this source code.
           flex: 1 1;
           border-top: 1px solid #ebebeb;
       }
-
+      #sel1,#sel2:hover{
+          cursor: pointer;
+      }
       .media-meta-day::after {
           content: '';
           -webkit-box-flex: 1;
@@ -377,10 +388,19 @@ file that was distributed with this source code.
           padding: 15px;
       }
       .media-chat .ident{
+          margin-top: 20px;
+          position: relative;
           color: #FFFFFF;
           text-align: center;
           font-size: 10px;
           display: grid;
+      }
+      .media-chat .ident .usr_name{
+          position: absolute;
+          top: -20px;
+          min-width: 200px;
+          text-align: left;
+          left: 0;
       }
       .media-body .open_popup_des,.open_popup_self{
           cursor: pointer;
@@ -433,8 +453,6 @@ file that was distributed with this source code.
           filter:opacity(0.7);
       }
       .popup-action{
-          width: 120px;
-          height: 80px;
           font-size:12px;
           position: absolute;
           background: #fff;
@@ -442,6 +460,7 @@ file that was distributed with this source code.
           list-style-type: none;
           text-align: center;
           padding: 5px;
+          box-shadow: rgb(0 0 0) 3px 5px 5px;
       }
       .popup-action li{
           margin: 5px;
@@ -495,9 +514,10 @@ file that was distributed with this source code.
             <div class="bg-ovlay ps-container ps-theme-default ps-active-y" id="chat-content" style="background: #4D4D4D;overflow-y: scroll !important; height:calc(100vh - 325px) !important;"></div>
 
             <div class="publisher bt-1 border-light">
-              <textarea class="publisher-input" disabled type="text" placeholder="メッセージを入力"></textarea>
+              <textarea style="resize: none;" class="publisher-input" maxlength="4000" disabled type="text" placeholder="メッセージを入力"></textarea>
               <input class="id-room" type="hidden">
               <input class="page-num" value="0" type="hidden">
+              <input class="upload_max_file_size" value="{{ upload_max_file_size }}" type="hidden">
             </div>
             <div class="publisher bt-2 border-light">
               <span class="publisher-btn file-group">
@@ -584,23 +604,22 @@ file that was distributed with this source code.
         });
       })
       $('.file-upload').change(function (e){
-          if($(this).val().length > 0){
-              $('.publisher-button').removeAttr('disabled');
-          }else{
-              $('.publisher-button').prop('disabled',true);
-          }
+          $('.publisher-button').click();
       });
-      // $('.publisher-input').keyup(function(e){
-      //     if ($.trim($(this).val()).length > 3){
-      //         $('.publisher-button').removeAttr('disabled');
-      //     }else{
-      //         $('.publisher-button').prop('disabled',true);
-      //     }
-      //     if(e.keyCode == 13) {
-      //       var mess = $.trim($(this).val());
-      //       sendMess(mess)
-      //     }
-      // });
+      $('.publisher-input').keydown(function(e){
+          if (e.keyCode === 13 && e.shiftKey === true) {
+              e.preventDefault();
+          }
+          // if ($.trim($(this).val()).length > 3){
+          //     $('.publisher-button').removeAttr('disabled');
+          // }else{
+          //     $('.publisher-button').prop('disabled',true);
+          // }
+          // if(e.keyCode == 13) {
+          //   var mess = $.trim($(this).val());
+          //   sendMess(mess)
+          // }
+      });
       $('.publisher-button').click(function(e){
           var mess = $.trim($('.publisher-input').val());
           sendMess(mess)
@@ -612,11 +631,16 @@ file that was distributed with this source code.
           var inputFile = $('.file-upload');
           var file = inputFile[0].files[0];
           if (val !== '' || file !== undefined){
-              $('.publisher-button').prop('disabled',true);
               var data = new FormData();
               if (file !== undefined){
+                  if (file.size > $('.upload_max_file_size').val()){
+                      $('.layer-popup').show();
+                      $('.layer-popup .popup-body .content').html('<p class="error-msg">ファイルサイズが大きすぎる </p>');
+                      return false;
+                  }
                   data.append('file', file, file.name);
               }
+              $('.publisher-button').prop('disabled',true);
               data.append('mess', val);
               data.append('recei', $('#sel2').val());
               data.append('type', $('#sel1').val());
@@ -634,7 +658,7 @@ file that was distributed with this source code.
                       var dd = String(today.getDate()).padStart(2, '0');
                       var mm = String(today.getMonth() + 1).padStart(2, '0');
                       var H = today.getHours();
-                      var i = today.getMinutes();
+                      var i = String(today.getMinutes()).padStart(2, '0');
                       var html = '';
                       if (val !== ''){
                           html += '<div class="media media-chat media-chat-reverse">'+
@@ -645,10 +669,20 @@ file that was distributed with this source code.
                               '</div>';
                       }
                       if (file !== undefined){
+                          var htmlIsAcceptPreview = '';
+                          if (data.file_name_origin){
+                              var re = /(?:\.([^.]+))?$/;
+                              var araccept = ['jpg','png','jpeg'];
+                              var ext = re.exec(data.file_name_origin)[1];
+                              if (fruits.includes(ext)){
+                                  htmlIsAcceptPreview = '<li class="act-preview" data-id="'+data.file_id+'">閲覧</li>';
+                              }
+                          }
                           html += '<div class="media media-chat media-chat-reverse">'+
                                   '<div class="media-body">'+
                                   '<span class="file_name open_popup_self text-center">'+data.file_name_origin+
                                       '<ul class="popup-action d-none">'+
+                                          '<li class="act-download" data-id="'+data.file_id+'">ダウンロード</li>'+htmlIsAcceptPreview+
                                           '<li class="act-delete" data-id="'+data.file_id+'">削除</li>'+
                                       '</ul>'+
                                   '</span>'+
@@ -781,6 +815,7 @@ file that was distributed with this source code.
           }).always(function(data) {
               if (data.success){
                   that.parents('.media-body').addClass('has_been_deleted');
+                  that.parents('.open_popup_self').append('<br><span class="was-deleted">（削除済み）</span>')
                   that.parents('ul').remove();
               }
           });

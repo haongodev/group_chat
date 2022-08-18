@@ -90,9 +90,8 @@ class MessengerController extends AbstractController
      */
     public function index(Request $request)
     {
-        $Customer = $this->getUser();
         return [
-            'Customer' => $Customer,
+            'upload_max_file_size' => $this->convertToBytes(ini_get('upload_max_filesize').'B')
         ];
     }
     /**
@@ -105,11 +104,12 @@ class MessengerController extends AbstractController
         $id_mess = $request->get('id_mess');
         $info_mess = $this->customerChatConversationRepository->findOneBy(['id' => $id_mess,'delete_at' => null]);
         if ($info_mess){
-            $src = '/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
+            $baseurl = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBasePath();
+            $src = $baseurl.'/html/upload/strage/'.$this->getUser()->getParentId().'/chat/'. $info_mess->getChatInfoId() .'/'.$info_mess->getFileName();
             $data = [
                 'success' => true,
                 'src' => $src,
-                'file_name' => $info_mess->getFileName(),
+                'file_name' => $info_mess->getFileNameOrigin(),
             ];
             return new JsonResponse($data);
         }
@@ -204,13 +204,21 @@ class MessengerController extends AbstractController
 
         }
     }
-    function setStatusListen($id_room,$status,$delay = 0){
-        $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
-        $value = [
-            'flag' => $status
-        ];
-        sleep($delay);
-        file_put_contents($cache_file_name,json_encode($value));
+    function setStatusListen($id_room,$id_sent,$id_page,$status){
+        $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/'.$id_room;
+        $getCacheData = file_get_contents($cache_file_name);
+        $getCacheData = json_decode($getCacheData);
+
+        if ($id_sent === '*'){
+            foreach ($getCacheData as $key => $val){
+                $val->page = $id_page;
+                $val->status = $status;
+            }
+        }else{
+            $getCacheData->$id_sent->status = $status;
+            $getCacheData->$id_sent->page = $id_page;
+        }
+        file_put_contents($cache_file_name,json_encode($getCacheData));
     }
     /**
      * お届け先一覧画面.
@@ -224,35 +232,77 @@ class MessengerController extends AbstractController
         $type = (int) $request->get('type');
         $id_room = $request->get('id_room');
         $id_page = (int) $request->get('id_page');
+        $id_parent = $this->getUser()->getParentId();
 
-        $cache_file_name = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
-        $cache_page_chat = $this->getParameter('eccube_theme_app_dir').'/user_data/page_cache_'.$id_sent.'.json';
         if ($id_room){// lísten
-            if(!file_exists($cache_file_name)){
-                file_put_contents($cache_file_name,'');
-            }
-            if(!file_exists($cache_page_chat)){
-                file_put_contents($cache_page_chat,json_encode(['page'=>$id_page]));
-            }
-
-            $get_p = file_get_contents($cache_page_chat);
-            $old_page = json_decode($get_p);
-
-            $get_ctn = file_get_contents($cache_file_name);
-            $file = json_decode($get_ctn);
-            $html = null;
-            if(is_null($file)){
-                $this->setStatusListen($id_room,false,0);
+            if ($type === 0){
+                $file_caching = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_group_cache_'.$id_parent.'.json';
+                if(!file_exists($file_caching)){
+                    $dataInitCache = [];
+                    $customer = $this->customerRepository
+                        ->createQueryBuilder('cs')
+                        ->select('cs.id','cs.parent_id')
+                        ->where('cs.parent_id = :parent_id')
+                        ->setParameter('parent_id', $id_parent)
+                        ->getQuery()
+                        ->getArrayResult();
+                    foreach ($customer as $key => $value){
+                        $dataInitCache[$value['id']] = ['status' => false,'page' => 0];
+                    }
+                    file_put_contents($file_caching,json_encode($dataInitCache));
+                }
             }else{
-                if($file->flag === true || $old_page->page != $id_page){
-                    $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room,$id_page);
-                    file_put_contents($cache_page_chat,json_encode(['page'=>$id_page]));
-                    $this->setStatusListen($id_room,false,1);
+                if($id_recei === '*'){
+                    $file_caching = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_all_cache_'.$id_parent.'.json';
+                }else{
+                    $file_caching = $this->getParameter('eccube_theme_app_dir').'/user_data/chat_cache_'.$id_room.'.json';
+                }
+                 if(!file_exists($file_caching)){
+                     $dataInitCache = [];
+                     if($id_recei === '*'){
+                         $customer = $this->customerRepository
+                             ->createQueryBuilder('cs')
+                             ->select('cs.id','cs.parent_id')
+                             ->where('cs.parent_id = :parent_id')
+                             ->setParameter('parent_id', $id_parent)
+                             ->getQuery()
+                             ->getArrayResult();
+                         foreach ($customer as $key => $value){
+                             $dataInitCache[$value['id']] = ['status' => false,'page' => 0];
+                         }
+                     }else{
+                         $dataInitCache = [
+                             $id_sent => [
+                                 'page' => 0,
+                                 'status' => false
+                             ],
+                             $id_recei => [
+                                 'page' => 0,
+                                 'status' => false
+                             ]
+                         ];
+                     }
+                    file_put_contents($file_caching,json_encode($dataInitCache));
+                }
+            }
+
+            $getCache = file_get_contents($file_caching);
+            $file = json_decode($getCache);
+            $html = null;
+            if($file->$id_sent->status === true || $file->$id_sent->page != $id_page){
+                $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room,$id_page);
+                if ($type === 1){
+                    if($id_recei === '*'){
+                        $this->setStatusListen('chat_all_cache_'.$id_parent.'.json',$id_sent,$id_page,false);
+                    }else{
+                        $this->setStatusListen('chat_cache_'.$id_room.'.json',$id_sent,$id_page,false);
+                    }
+                }else{
+                    $this->setStatusListen('chat_group_cache_'.$id_parent.'.json',$id_sent,$id_page,false);
                 }
             }
         }else{// init
             // check exist in customer_chat_ìno
-            file_put_contents($cache_page_chat,json_encode(['page'=>0]));
             $html = $this->renderBubble($type,$id_recei,$id_sent,$id_room,$id_page);
         }
 
@@ -321,6 +371,7 @@ class MessengerController extends AbstractController
         $id_room = $request->get('id_room');
         $register_name = $this->getUser()->getName01().' '.$this->getUser()->getName02();
         $chat_info = $this->checkTypeInfo($type,$id_recei,$id_sent);
+        $id_parent = $this->getUser()->getParentId();
         if (count($chat_info) > 0){
             $ChatInfo = $chat_info[0];
         }else{
@@ -330,7 +381,7 @@ class MessengerController extends AbstractController
                 $Chat->setTargetId($id_recei);
             }else{
                 if ($id_recei === '*'){
-                    $Chat->setTargetId($this->getUser()->getParentId().'/'.$id_recei);
+                    $Chat->setTargetId($id_parent.'/'.$id_recei);
                 }else{
                     $Chat->setTargetId($id_sent.'/'.$id_recei);
                 }
@@ -362,7 +413,7 @@ class MessengerController extends AbstractController
             $fileNameOrigin = $file->getClientOriginalName();
             $fileName = md5($file->getFilename() . time()) . '.' . $file->getClientOriginalExtension();
             $file->move(
-                'html/upload/strage/'.$this->getUser()->getParentId().'/chat/'.$ChatInfo['id'],
+                'html/upload/strage/'.$id_parent.'/chat/'.$ChatInfo['id'],
                 $fileName
             );
 
@@ -393,11 +444,18 @@ class MessengerController extends AbstractController
         if ($file){
             $data['file_id'] = $Conversation_fie->getId();
         }
-        $this->setStatusListen($id_room,true);
+        if ($type === 0){
+            $this->setStatusListen('chat_group_cache_'.$id_parent.'.json','*',0,true);
+        }else{
+            if($id_recei === '*'){
+                $this->setStatusListen('chat_all_cache_'.$id_parent.'.json','*',0,true);
+            }else{
+                $this->setStatusListen('chat_cache_'.$id_room.'.json','*',0,true);
+            }
+        }
         $data['success'] = true;
         return new JsonResponse($data);
     }
-
     /**
      * helper.
      *
@@ -424,5 +482,26 @@ class MessengerController extends AbstractController
         $query = $query->andWhere('c.delete_at is null')->orderBy('c.create_date', 'DESC');
         $chat_info = $query->getQuery()->getResult();
         return $chat_info;
+    }
+    /**
+     * helper.
+     *
+     */
+    function convertToBytes(string $from): ?int {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        $number = substr($from, 0, -2);
+        $suffix = strtoupper(substr($from,-2));
+
+        //B or no suffix
+        if(is_numeric(substr($suffix, 0, 1))) {
+            return preg_replace('/[^\d]/', '', $from);
+        }
+
+        $exponent = array_flip($units)[$suffix] ?? null;
+        if($exponent === null) {
+            return null;
+        }
+
+        return $number * (1024 ** $exponent);
     }
 }
