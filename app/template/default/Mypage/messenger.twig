@@ -154,7 +154,7 @@ file that was distributed with this source code.
           border-bottom: 8px solid transparent;
           left: -13px;
           border-right: 13px solid #FFFFFF;
-          top: 5px;
+          top: 50%;
       }
       .avatar {
           margin-right: 17px;
@@ -181,7 +181,7 @@ file that was distributed with this source code.
       .media-chat .media-body .msg{
           display: flex;
           align-items: center;
-          height: 100%;
+          min-height: 56px;
           font-size: 12px;
           word-break: break-all;
       }
@@ -202,6 +202,7 @@ file that was distributed with this source code.
           flex-flow: row-reverse;
       }
       .media-body {
+          min-height: 56px;
           overflow: unset;
           position: relative;
           width: fit-content;
@@ -620,7 +621,8 @@ file that was distributed with this source code.
           // }
       });
       $('.publisher-button').click(function(e){
-          var mess = $.trim($('.publisher-input').val());
+          var mess = $.trim($('.publisher-input').val()).replace(/\n/g, "<br />");
+          console.log(mess);
           sendMess(mess)
       });
       $('.file-group img').click(function (){

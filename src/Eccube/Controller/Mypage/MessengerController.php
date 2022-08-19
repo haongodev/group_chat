@@ -444,7 +444,7 @@ class MessengerController extends AbstractController
         if ($file){
             $data['file_id'] = $Conversation_fie->getId();
         }
-        if ($type === 0){
+        if ($type == 0){
             $this->setStatusListen('chat_group_cache_'.$id_parent.'.json','*',0,true);
         }else{
             if($id_recei === '*'){

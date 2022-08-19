@@ -29,7 +29,7 @@
       <div class="media media-chat media-chat-reverse">
         <div class="media-body {% if buble.delete_at != null %}has_been_deleted{% endif %}">
           {% if buble.chat_class == 1 %}
-            <p class="msg">{{ buble.chat_string }}</p>
+            <p class="msg">{{ buble.chat_string | raw }}</p>
           {% else %}
             <span class="file_name open_popup_self text-center" >
               {{ buble.file_name_origin }}
