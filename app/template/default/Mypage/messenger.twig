@@ -622,7 +622,6 @@ file that was distributed with this source code.
       });
       $('.publisher-button').click(function(e){
           var mess = $.trim($('.publisher-input').val()).replace(/\n/g, "<br />");
-          console.log(mess);
           sendMess(mess)
       });
       $('.file-group img').click(function (){
@@ -675,7 +674,7 @@ file that was distributed with this source code.
                               var re = /(?:\.([^.]+))?$/;
                               var araccept = ['jpg','png','jpeg'];
                               var ext = re.exec(data.file_name_origin)[1];
-                              if (fruits.includes(ext)){
+                              if (araccept.includes(ext)){
                                   htmlIsAcceptPreview = '<li class="act-preview" data-id="'+data.file_id+'">閲覧</li>';
                               }
                           }
